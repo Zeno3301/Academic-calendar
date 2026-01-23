@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Главный файл для запуска графического интерфейса
 """
@@ -10,38 +8,27 @@ import traceback
 
 def main():
     try:
-        # Проверяем режим (EXE или разработка)
         is_exe = hasattr(sys, 'frozen') or hasattr(sys, '_MEIPASS')
-        
-        # Получаем правильные пути
         if is_exe:
-            # В EXE файле
             base_path = sys._MEIPASS
             src_path = os.path.join(base_path, 'src')
         else:
-            # В режиме разработки
             base_path = os.path.dirname(os.path.abspath(__file__))
             src_path = os.path.join(base_path, 'src')
-        
-        # Критически важно: добавляем путь
         if src_path not in sys.path:
             sys.path.insert(0, src_path)
-        
-        # Также добавляем родительскую директорию src
+
         src_parent = os.path.dirname(src_path)
         if src_parent not in sys.path:
             sys.path.insert(0, src_parent)
-        
-        # Теперь импортируем
+
         try:
-            # Способ 1: Прямой импорт из src
             import src.gui_app
             from src.gui_app import AcademicCalendarGUI
             print("✓ Импорт через src.gui_app")
             
         except ImportError:
             try:
-                # Способ 2: Импорт как модуль
                 import importlib.util
                 module_path = os.path.join(src_path, 'gui_app.py')
                 
@@ -59,8 +46,6 @@ def main():
                 print(f"✗ Все способы импорта не удались: {e}")
                 print(f"Путь к файлу: {os.path.join(src_path, 'gui_app.py')}")
                 print(f"Файл существует: {os.path.exists(os.path.join(src_path, 'gui_app.py'))}")
-                
-                # Показываем что в sys.path
                 print(f"\nsys.path:")
                 for p in sys.path:
                     print(f"  {p}")
@@ -68,12 +53,10 @@ def main():
                 if not is_exe:
                     input("Нажмите Enter...")
                 return 1
-        
-        # Импортируем tkinter
+
         import tkinter as tk
         print("✓ tkinter импортирован")
-        
-        # Создаем приложение
+
         root = tk.Tk()
         app = AcademicCalendarGUI(root)
         root.mainloop()

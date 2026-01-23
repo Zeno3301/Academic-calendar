@@ -2,14 +2,16 @@
 Конфигурация приложения
 """
 
+# Настройки по умолчанию
 DEFAULT_SETTINGS = {
     'total_weeks': 52,
-    'first_week_parity': '*',
+    'first_week_parity': '*',  # Первая неделя нечётная
     'output_dir': 'output',
     'date_format': '%d.%m.%Y',
     'csv_separator': ';',
 }
 
+# Названия дней недели на русском
 WEEKDAYS_RU = [
     'понедельник',
     'вторник', 

@@ -7,9 +7,9 @@ echo.
 
 REM
 set "APP_NAME=Генератор четности недель"
-set "VERSION=1.0"
+set "VERSION=1.1.0"
 set "PACKAGE_DIR=Генератор четности недель v%VERSION%"
-set "ZIP_NAME=Генератор четности недель_v%VERSION%.zip"
+set "ZIP_NAME=generator_chetnosti_nedel_v%VERSION%.zip"
 
 echo Проверяем рабочую сборку...
 if not exist "dist\%APP_NAME%\%APP_NAME%.exe" (
@@ -37,7 +37,7 @@ if errorlevel 1 (
 echo [✓] Создана папка: %PACKAGE_DIR%
 echo.
 
-REM Копируем программу - КОПИРУЕМ ВСЮ ПАПКУ!
+REM
 echo 2. Копируем программу и все файлы...
 xcopy "dist\%APP_NAME%\*.*" "%PACKAGE_DIR%\" /E /I /Y /Q
 if errorlevel 1 (
@@ -55,23 +55,10 @@ REM Копируем документацию
 echo 3. Добавляем документацию...
 set "DOCS_COPIED=0"
 
-if exist "README.md" (
-    copy "README.md" "%PACKAGE_DIR%\README.md" >nul
-    set /a DOCS_COPIED+=1
-    echo   [✓] README.md
-)
-
 if exist "README.txt" (
     copy "README.txt" "%PACKAGE_DIR%\README.txt" >nul
     set /a DOCS_COPIED+=1
     echo   [✓] README.txt
-)
-
-if exist "test_scenarios.md" (
-    copy "test_scenarios.md" "%PACKAGE_DIR%\ТЕСТИРОВАНИЕ.txt" >nul
-    set /a DOCS_COPIED+=1
-    echo   [✓] ТЕСТИРОВАНИЕ.txt
-)
 
 if exist "LICENSE" (
     copy "LICENSE" "%PACKAGE_DIR%\LICENSE" >nul

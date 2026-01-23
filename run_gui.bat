@@ -3,7 +3,6 @@ import sys
 import os
 
 def force_gui_visible():
-    """Принудительно показываем GUI"""
     root = tk.Tk()
     
     # Настройки окна

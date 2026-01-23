@@ -20,7 +20,7 @@ class AcademicWeek:
     number: int
     start_date: datetime.date
     end_date: datetime.date
-    parity: str  # "*" (нечётная) или "**" (чётная)
+    parity: str
     is_current: bool = False
     contains_sept_1: bool = False
 
@@ -47,15 +47,13 @@ class UniversityCalendar:
             (дата_начала, примечание)
         """
         sept_1 = datetime.date(self.academic_year, 9, 1)
-        
-        # День недели 1 сентября
+
         weekday_names = ["понедельник", "вторник", "среда", 
                         "четверг", "пятница", "суббота", "воскресенье"]
         weekday_name = weekday_names[sept_1.weekday()]
-        
-        # Определяем начало первой недели
-        if sept_1.weekday() == 6:  # Воскресенье
-            start_date = sept_1 + timedelta(days=1)  # Понедельник 2 сентября
+
+        if sept_1.weekday() == 6:
+            start_date = sept_1 + timedelta(days=1)
             note = f"1 сентября - воскресенье, уч. год начинается 2 сентября"
         else:
             start_date = sept_1 - timedelta(days=sept_1.weekday())
@@ -75,29 +73,21 @@ class UniversityCalendar:
         """
         self.weeks.clear()
 
-        # Определяем первую неделю
         start_date, first_week_note = self.find_first_academic_week()
 
-        # ⭐ ИСПРАВЛЕНИЕ: Определяем правильную четность первой недели
         sept_1 = datetime.date(self.academic_year, 9, 1)
 
-        # Если 1 сентября - воскресенье, то уч. год начинается со 2 сентября
-        # и первая неделя должна быть чётной
-        if sept_1.weekday() == 6:  # Воскресенье
-            first_week_parity = "**"  # Чётная
+        if sept_1.weekday() == 6:
+            first_week_parity = "**"
         else:
-            first_week_parity = "*"  # Нечётная
+            first_week_parity = "*"
 
-        # Генерируем недели
         current_parity = first_week_parity
 
         for week_num in range(1, total_weeks + 1):
             end_date = start_date + timedelta(days=6)
-            # Используем текущую четность
             parity = current_parity
-            # Проверяем, текущая ли это неделя
             is_current = start_date <= self.today <= end_date
-            # Проверяем, содержит ли неделя 1 сентября
             contains_sept_1 = start_date <= sept_1 <= end_date
             week = AcademicWeek(
                 number=week_num,
@@ -110,8 +100,6 @@ class UniversityCalendar:
 
             self.weeks.append(week)
             start_date += timedelta(days=7)
-
-            # Меняем четность для следующей недели
             current_parity = "**" if current_parity == "*" else "*"
     
         return self.weeks
@@ -133,13 +121,11 @@ class UniversityCalendar:
             header += " Примечание"
         print(header)
         print("-"*70)
-        
-        # Данные
+
         for week in self.weeks:
             start_str = week.start_date.strftime("%d.%m.%Y")
             end_str = week.end_date.strftime("%d.%m.%Y")
-            
-            # Форматируем номер недели с маркером текущей
+
             week_num_str = f"{week.number}"
             if week.is_current:
                 week_num_str = f"{week.number}●"
@@ -169,8 +155,7 @@ class UniversityCalendar:
         
         with open(filename, 'w', newline='', encoding='utf-8-sig') as f:
             writer = csv.writer(f, delimiter=';')
-            
-            # Заголовок
+
             writer.writerow([
                 'Номер недели',
                 'Начало недели',
@@ -179,8 +164,7 @@ class UniversityCalendar:
                 'Текущая неделя',
                 'Содержит 1 сентября'
             ])
-            
-            # Данные
+
             for week in self.weeks:
                 writer.writerow([
                     week.number,
@@ -246,8 +230,7 @@ def analyze_year(year: int) -> None:
         start_date = sept_1 - timedelta(days=weekday_num)
         print(f"✅ Первая учебная неделя: {start_date.strftime('%d.%m.%Y')} - "
               f"{(start_date + timedelta(days=6)).strftime('%d.%m.%Y')}")
-    
-    # Предыдущие и следующие годы для сравнения
+
     print(f"\nСравнение с соседними годами:")
     for y in [year-1, year, year+1]:
         s1 = datetime.date(y, 9, 1)
@@ -293,8 +276,7 @@ def main():
                        help='Количество недель (по умолчанию: 52)')
     
     args = parser.parse_args()
-    
-    # Определяем год
+
     if args.year:
         if not validate_year(args.year):
             current_year = datetime.date.today().year
@@ -305,37 +287,31 @@ def main():
         today = datetime.date.today()
         year = today.year if today.month >= 9 else today.year - 1
     
-    print(f"\n🎓 УНИВЕРСИТЕТСКИЙ КАЛЕНДАРЬ")
+    print(f"\n КАЛЕНДАРЬ УЧЕБНОГО ГОДА")
     print(f"{'='*50}")
-    
-    # Анализ года если запрошен
+
     if args.analyze:
         analyze_year(year)
         return
     
-    # Создаем календарь
     calendar = UniversityCalendar(year)
     calendar.generate(args.weeks)
-    
-    # Выводим информацию о первой неделе
+
     first_week = calendar.weeks[0] if calendar.weeks else None
     if first_week:
-        print(f"📅 Учебный год: {year}-{year+1}")
-        print(f"📍 Первая неделя: {first_week.start_date.strftime('%d.%m.%Y')} - "
+        print(f"Учебный год: {year}-{year+1}")
+        print(f"Первая неделя: {first_week.start_date.strftime('%d.%m.%Y')} - "
               f"{first_week.end_date.strftime('%d.%m.%Y')} ({first_week.parity})")
-    
-    # Выводим таблицу
+
     calendar.print_table(show_notes=args.detailed)
-    
-    # Текущая неделя
+
     current_week = calendar.get_current_week()
     if current_week:
         print(f"\n📌 ТЕКУЩАЯ НЕДЕЛЯ: №{current_week.number} "
               f"({current_week.parity}) "
               f"{current_week.start_date.strftime('%d.%m.%Y')} - "
               f"{current_week.end_date.strftime('%d.%m.%Y')}")
-    
-    # Статистика
+
     if args.stats:
         stats = calendar.get_statistics()
         print(f"\n{'='*50}")
@@ -348,8 +324,7 @@ def main():
         print(f"Окончание: {stats['end_date'].strftime('%d.%m.%Y')}")
         if stats['current_week']:
             print(f"Текущая неделя: №{stats['current_week']}")
-    
-    # Экспорт
+
     if args.export:
         filepath = calendar.export_csv()
         print(f"\n💾 Экспортировано в: {filepath}")

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Генератор четности недель университета
+Генератор учебного календаря для университета
+Версия: 3.0 (упрощенная, без каникул)
 """
 
 import datetime
@@ -15,30 +16,44 @@ from dataclasses import dataclass, asdict
 
 @dataclass
 class AcademicWeek:
+    """Учебная неделя"""
     number: int
     start_date: datetime.date
     end_date: datetime.date
-    parity: str  # "*" (нечётная) или "**" (чётная)
+    parity: str
     is_current: bool = False
     contains_sept_1: bool = False
 
 
 class UniversityCalendar:
+    """Генератор календаря для университета"""
     
     def __init__(self, academic_year: int):
+        """
+        Инициализация
+        
+        Args:
+            academic_year: Год начала учебного года (напр., 2026)
+        """
         self.academic_year = academic_year
         self.weeks: List[AcademicWeek] = []
         self.today = datetime.date.today()
         
     def find_first_academic_week(self) -> Tuple[datetime.date, str]:
+        """
+        Находит первую учебную неделю по правилам ГОСТ
+        
+        Returns:
+            (дата_начала, примечание)
+        """
         sept_1 = datetime.date(self.academic_year, 9, 1)
 
         weekday_names = ["понедельник", "вторник", "среда", 
                         "четверг", "пятница", "суббота", "воскресенье"]
         weekday_name = weekday_names[sept_1.weekday()]
-        
-        if sept_1.weekday() == 6:  # Воскресенье
-            start_date = sept_1 + timedelta(days=1)  # Понедельник 2 сентября
+
+        if sept_1.weekday() == 6:
+            start_date = sept_1 + timedelta(days=1)
             note = f"1 сентября - воскресенье, уч. год начинается 2 сентября"
         else:
             start_date = sept_1 - timedelta(days=sept_1.weekday())
@@ -47,12 +62,21 @@ class UniversityCalendar:
         return start_date, note
     
     def generate(self, total_weeks: int = 52) -> List[AcademicWeek]:
+        """
+        Генерирует календарь
+
+        Args:
+            total_weeks: Общее количество недель
+
+        Returns:
+            Список учебных недель
+        """
         self.weeks.clear()
 
         start_date, first_week_note = self.find_first_academic_week()
+
         sept_1 = datetime.date(self.academic_year, 9, 1)
 
-        # Если 1 сентября - воскресенье, то уч. год начинается со 2 сентября и первая неделя должна быть чётной
         if sept_1.weekday() == 6:
             first_week_parity = "**"
         else:
@@ -62,11 +86,8 @@ class UniversityCalendar:
 
         for week_num in range(1, total_weeks + 1):
             end_date = start_date + timedelta(days=6)
-
             parity = current_parity
-
             is_current = start_date <= self.today <= end_date
-
             contains_sept_1 = start_date <= sept_1 <= end_date
             week = AcademicWeek(
                 number=week_num,
@@ -79,12 +100,12 @@ class UniversityCalendar:
 
             self.weeks.append(week)
             start_date += timedelta(days=7)
-
             current_parity = "**" if current_parity == "*" else "*"
     
         return self.weeks
     
     def print_table(self, show_notes: bool = False) -> None:
+        """Вывод таблицы в консоль"""
         
         print("\n" + "="*70)
         print(f"УЧЕБНЫЙ КАЛЕНДАРЬ {self.academic_year}-{self.academic_year + 1}")
@@ -93,7 +114,8 @@ class UniversityCalendar:
         if show_notes:
             print("Легенда: [*] - нечётная неделя, [**] - чётная неделя, [●] - текущая неделя")
             print("-"*70)
-
+        
+        # Заголовок
         header = f"{'Неделя':<8} {'Начало':<12} {'Конец':<12} {'Четность':<10}"
         if show_notes:
             header += " Примечание"
@@ -129,8 +151,8 @@ class UniversityCalendar:
             Путь к созданному файлу
         """
         if not filename:
-            filename = f"Четность-недель-{self.year_var.get()}_{int(self.year_var.get())+1}.csv"
-
+            filename = f"university_calendar_{self.academic_year}_{self.academic_year+1}.csv"
+        
         with open(filename, 'w', newline='', encoding='utf-8-sig') as f:
             writer = csv.writer(f, delimiter=';')
 
@@ -254,8 +276,7 @@ def main():
                        help='Количество недель (по умолчанию: 52)')
     
     args = parser.parse_args()
-    
-    # Определяем год
+
     if args.year:
         if not validate_year(args.year):
             current_year = datetime.date.today().year
@@ -266,20 +287,20 @@ def main():
         today = datetime.date.today()
         year = today.year if today.month >= 9 else today.year - 1
     
-    print(f"\n🎓 ЧЕТНОСТЬ НЕДЕЛЬ")
+    print(f"\n КАЛЕНДАРЬ УЧЕБНОГО ГОДА")
     print(f"{'='*50}")
 
     if args.analyze:
         analyze_year(year)
         return
-
+    
     calendar = UniversityCalendar(year)
     calendar.generate(args.weeks)
 
     first_week = calendar.weeks[0] if calendar.weeks else None
     if first_week:
-        print(f"📅 Учебный год: {year}-{year+1}")
-        print(f"📍 Первая неделя: {first_week.start_date.strftime('%d.%m.%Y')} - "
+        print(f"Учебный год: {year}-{year+1}")
+        print(f"Первая неделя: {first_week.start_date.strftime('%d.%m.%Y')} - "
               f"{first_week.end_date.strftime('%d.%m.%Y')} ({first_week.parity})")
 
     calendar.print_table(show_notes=args.detailed)
